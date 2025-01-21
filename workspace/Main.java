@@ -1,8 +1,8 @@
 import java.awt.*;
 import java.awt.event.*;
-import javax.swing.*;
-import java.util.*;
 import java.io.*;
+import java.util.*;
+import javax.swing.*;
 
 public class Main 
 {
@@ -17,6 +17,7 @@ public class Main
   private ImageIcon img;
   private JLabel imageLabel;
   private JLabel outputLabel;
+  private JTextField input; 
   
   public static void main(String[] args) {
     // Create the GUI
@@ -29,7 +30,7 @@ public class Main
   public void loadCountries() 
   {
     // Open the data file - do not change
-    File file = new File("countries-data.csv");
+    File file = new File("/workspaces/Countries/workspace/countries-data.csv");
     Scanner scan = null;
     try {
       scan = new Scanner(file);
@@ -40,10 +41,15 @@ public class Main
     // Write a for loop that goes through the countryArray.
     // for(int i ....) {
     // Do the following inside the loop
-      String input = scan.nextLine();
-      String[] data = input.split(",");
-      System.out.println("Read in " + data[0]);
-      // inside the loop, create a new Country using your constructor with 3 arguments and pass in data[0], data[1], data[2], data[3] as arguments.
+      for (int i = 0; i < countryArray.length; i++) {
+        String input = scan.nextLine();
+        String[] data = input.split(",");
+        System.out.println("Read in " + data[0]);
+        
+        countryArray[i] = new Country(data[0], data[1], data[2], data[3]);
+      }
+
+      // inside the loop, create a new Country using your constructor with 4 arguments and pass in data[0], data[1], data[2], data[3] as arguments.
      // inside the loop, set countryArray[i] to the created Country object
      
     
@@ -53,34 +59,59 @@ public class Main
   */
   public void showCountry() {
     // Get the country at index from countryArray
-    
+    Country country = countryArray[index];
     // Use its get method to get the its image file name and save it into imagefile variable below instead of worldmap.jpg.
-    String imagefile = "worldmap.jpg";
+    String imagefile = country.getImage();
     // Use the following code to create an new Image Icon and put it into the GUI
-    img = new ImageIcon(imagefile);
+    img = new ImageIcon("/workspaces/Countries/workspace/" + imagefile);
     imageLabel.setIcon(img);
   }
   
   /* nextButton should increment index. If the index is greater than 9, reset it back to 0. Clear the outputLabel to empty string using setText, and call showCountry();*/
-  public void nextButtonClick()
+  public void nextButtonClick(boolean correct, boolean bypass)
   {
-    
+    input.setText("");
+    if (!bypass) {
+      if (correct) {
+        outputLabel.setText("Correct! What is the name of this country?");
+      } else {
+        outputLabel.setText("Incorrect, What is the name of this country?");
+        return;
+      }
+    } else {
+      outputLabel.setText("What is the name of this country?");
+    }
+
+    index++;
+
+    if (index > countryArray.length-1) {
+      index = 0;
+    }
+    //index = Math.clamp(index + 1, 0, 9);
+    showCountry();
   }
   
   /* reviewButton should get the country at index from the countryArray, call its toString() method and save the result, print it out with System.out.println and as an argument to outputLabel.setText( text to print out ); */
   public void reviewButtonClick()
   {
-     
+     Country current = countryArray[index];
+     outputLabel.setText(current.tostringMethod());
   }
 
   /* quizButton should clear the outputLabel (outputLabel.setText to empty string), get the country at index from countryArray, print out a question about it like What country is this? and/or What's this country's capital?. Get the user's answer using scan.nextLine() and check if it is equal to the country's data using its get methods and print out correct or incorrect.
   */
-  public void quizButtonClick()
+  public void quizButtonClick() // submit answer
   {
-    Scanner scan = new Scanner(System.in); 
-    
-    
-    
+    String currentInput = input.getText().toLowerCase();
+    Country current = countryArray[index];
+    String countryName = current.getName().toLowerCase();
+
+    if (currentInput.equals(countryName)) {
+      //outputLabel.setText("correct!");
+      this.nextButtonClick(true, false);
+    } else {
+      this.nextButtonClick(false, false);
+    }
   }
 
 
@@ -90,7 +121,7 @@ public class Main
   /* The Main() constructor is finished and will construct the GUI */
 public Main() {
     jFrame.setLayout(new FlowLayout());
-    jFrame.setSize(500, 360);
+    jFrame.setSize(1200, 1200);
         jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         // buttons at the top
         JButton reviewButton = new JButton("Review");
@@ -101,14 +132,18 @@ public Main() {
         jFrame.add(newButton);
         
         // create a new image icon
-        img = new ImageIcon("worldmap.jpg");
+        img = new ImageIcon("/workspaces/Countries/workspace" + "worldmap.jpg");
         // create a label to display image
         imageLabel = new JLabel(img);
         // and one for output
         outputLabel = new JLabel();
+        outputLabel.setText("What is the name of this country?");
         jFrame.add(imageLabel);
         jFrame.add(outputLabel);
         jFrame.setVisible(true);
+
+        input = new JTextField(20);
+        jFrame.add(input);
         // add event listener for button click
         reviewButton.addActionListener(new ActionListener() {
     public void actionPerformed(ActionEvent e) 
@@ -126,7 +161,7 @@ public Main() {
    newButton.addActionListener(new ActionListener()  {
     public void actionPerformed(ActionEvent e) 
     {
-      nextButtonClick();
+      nextButtonClick(false, true);
     }
    });
 }
